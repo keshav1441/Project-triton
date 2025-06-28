@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+
+# Cognito JWT decoding and auth
+python-jose[cryptography]
+httpx
+
+# MongoDB async driver
+motor
+
+# Data validation
+pydantic
+pydantic[email]
+
+# Optional: for loading env vars
+python-dotenv
