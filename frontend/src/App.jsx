@@ -9,6 +9,7 @@ import LeaderBoard from './pages/leaderboard'
 import Connect from './pages/connect'
 import Scheduler from './pages/scheduler'
 import SmartTriton from './pages/smarttriton'
+import Profile from './pages/profile'
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
           <Route path="connect" element={<Connect />} />
           <Route path="scheduler" element={<Scheduler />} />
           <Route path="smarttriton" element={<SmartTriton />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
       </Routes>
     </Router>

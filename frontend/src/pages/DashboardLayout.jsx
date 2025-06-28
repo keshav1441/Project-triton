@@ -34,50 +34,69 @@ export default function DashboardLayout() {
     { to: '/scheduler', label: 'Scheduler', icon: CalendarMonthOutlinedIcon },
   ];
 
-  const SidebarContent = () => (
-    <div className="h-full bg-gray-900 text-white p-5 flex flex-col justify-between w-60">
-      <div>
-        {/* Logo + Text */}
-        <div className="flex items-center space-x-4 mb-6 group">
-          <div className="bg-blue-500 text-black rounded w-10 h-10 flex items-center justify-center font-bold group-hover:text-white transition-colors duration-200">
-            T
-          </div>
-          <div className="flex flex-col">
-            <h2 className="text-lg font-bold text-center">Project Triton</h2>
-            <span className="text-sm text-gray-300 text-center">Beach Conservation</span>
-          </div>
+const SidebarContent = () => (
+  <div className="h-full bg-gray-900 text-white p-5 flex flex-col justify-between w-60">
+    <div>
+      {/* Logo + Text */}
+      <div className="flex items-center space-x-4 mb-6 group">
+        <div className="bg-blue-500 text-black rounded w-10 h-10 flex items-center justify-center font-bold group-hover:text-white transition-colors duration-200">
+          T
         </div>
-
-        {/* Navigation */}
-        <nav className="flex flex-col space-y-3">
-          {navItems.map(({ to, label, icon: Icon }) => (
-            <Link
-              key={to}
-              to={to}
-              onClick={() => setSidebarOpen(false)}
-              className={`group flex items-center space-x-2 px-2 py-1 rounded ${
-                location.pathname === to ? 'bg-blue-500 text-white' : 'hover:bg-blue-500 hover:text-white'
-              }`}
-            >
-              <Icon
-                className={`flex-1 transition-colors duration-200 ${
-                  location.pathname === to ? 'text-white' : 'text-blue-500 group-hover:text-white'
-                }`}
-              />
-              <span className="flex-2">{label}</span>
-            </Link>
-          ))}
-        </nav>
+        <div className="flex flex-col">
+          <h2 className="text-lg font-bold text-center">Project Triton</h2>
+          <span className="text-sm text-gray-300 text-center">Beach Conservation</span>
+        </div>
       </div>
+
+      {/* Navigation */}
+      <nav className="flex flex-col space-y-3">
+        {navItems.map(({ to, label, icon: Icon }) => (
+          <Link
+            key={to}
+            to={to}
+            onClick={() => setSidebarOpen(false)}
+            className={`group flex items-center space-x-2 px-2 py-1 rounded ${
+              location.pathname === to ? 'bg-blue-500 text-white' : 'hover:bg-blue-500 hover:text-white'
+            }`}
+          >
+            <Icon
+              className={`flex-1 transition-colors duration-200 ${
+                location.pathname === to ? 'text-white' : 'text-blue-500 group-hover:text-white'
+              }`}
+            />
+            <span className="flex-2">{label}</span>
+          </Link>
+        ))}
+      </nav>
+    </div>
+
+    {/* Bottom Profile + Logout */}
+    <div className="space-y-3">
+      <Link
+        to="/profile"
+        onClick={() => setSidebarOpen(false)}
+        className={`group flex items-center space-x-2 px-2 py-1 rounded ${
+          location.pathname === '/profile' ? 'bg-blue-500 text-white' : 'hover:bg-blue-500 hover:text-white'
+        }`}
+      >
+        <AccountCircleOutlinedIcon
+          className={`flex-1 transition-colors duration-200 ${
+            location.pathname === '/profile' ? 'text-white' : 'text-blue-500 group-hover:text-white'
+          }`}
+        />
+        <span className="flex-2">Profile</span>
+      </Link>
 
       <button
         onClick={handleSignOut}
-        className="mt-6 outline hover:bg-blue-600 hover:outline-transparent outline-offset-2 outline-white text-white py-2 px-4 rounded"
+        className="outline hover:bg-blue-600 hover:outline-transparent outline-offset-2 outline-white text-white py-2 px-4 rounded w-full"
       >
         Logout
       </button>
     </div>
-  );
+  </div>
+);
+
 
   return (
     <div className="flex min-h-screen">
