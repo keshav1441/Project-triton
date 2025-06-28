@@ -3,6 +3,9 @@ import httpx
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import os
+from dotenv import load_dotenv
+load_dotenv()
+
 
 COGNITO_REGION = os.getenv("COGNITO_REGION")
 COGNITO_USER_POOL_ID = os.getenv("COGNITO_USER_POOL_ID")
