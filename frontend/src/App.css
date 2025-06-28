@@ -12,6 +12,17 @@
   will-change: filter;
   transition: filter 300ms;
 }
+.primary-hover {
+  transition: color 0.2s ease-in-out;
+}
+
+.primary-hover:hover {
+  color: #22d3ee; /* Tailwind's cyan-300 */
+}
+
+.secondary {
+  color: #888;
+}
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
