@@ -1,10 +1,12 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from utils.currentUser import get_current_user
 from huggingface_hub import hf_hub_download
 import joblib
 import pandas as pd
-from models.schedulerModel import WeatherInput, MODEL_FEATURES
+from models.schedulerModel import WeatherInput, MODEL_FEATURES, ScheduleCreateModel
 from db import event_collection
 from datetime import datetime, date
+from bson import ObjectId
 
 router = APIRouter()
 
@@ -63,6 +65,31 @@ async def get_schedule(event_date: date):
 
 
 @router.post("/schedule")
-def create_schedule(schedule_data: dict):
-    # Placeholder for schedule creation
-    return {"message": "Schedule created successfully", "data": schedule_data}
+async def create_schedule(
+    schedule_data: ScheduleCreateModel,
+    user: dict = Depends(get_current_user)
+):
+    try:
+        print(f"User object type: {type(user)}")
+        print(f"User object: {user}")
+        
+        schedule_dict = schedule_data.dict()
+        
+        schedule_dict["created_by"] = ObjectId(user["_id"])
+
+        if isinstance(schedule_dict["date"], date):
+            schedule_dict["date"] = datetime.combine(schedule_dict["date"], datetime.min.time())
+
+        result = await event_collection.insert_one(schedule_dict)
+        
+        schedule_dict["_id"] = str(result.inserted_id)
+        schedule_dict["created_by"] = str(schedule_dict["created_by"])  
+
+        return {
+            "message": "Schedule created successfully",
+            "data": schedule_dict
+        }
+        
+    except Exception as e:
+        print(f"Full error: {e}") 
+        raise HTTPException(status_code=500, detail=f"Error creating schedule: {e}")

@@ -48,11 +48,11 @@ MODEL_FEATURES = [
     'severerisk', 'moonphase'
 ]
 
-class Schedule(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+class ScheduleCreateModel(BaseModel):
     name: str
     beach_name: str
     start_time: datetime
-    end_time: datetime  
+    end_time: datetime
     date: date
-    created_by: ObjectId
+    description: Optional[str] = None
+    created_by: Optional[str] = None
