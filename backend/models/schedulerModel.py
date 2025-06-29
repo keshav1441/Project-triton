@@ -1,9 +1,11 @@
 from pydantic import BaseModel, ConfigDict
-from typing import List
-from bson import ObjectId
+from typing import Optional, List
 from datetime import datetime, date
+from bson import ObjectId
 
 class WeatherInput(BaseModel):
+    name: str
+    datetime: datetime
     tempmax: float
     tempmin: float
     temp: float
@@ -15,6 +17,7 @@ class WeatherInput(BaseModel):
     precip: float
     precipprob: float
     precipcover: float
+    preciptype: Optional[List[str]] = None
     snow: float
     snowdepth: float
     windgust: float
@@ -27,12 +30,22 @@ class WeatherInput(BaseModel):
     solarenergy: float
     uvindex: float
     severerisk: float
+    sunrise: Optional[str] = None
+    sunset: Optional[str] = None
     moonphase: float
+    conditions: Optional[str] = None
+    description: Optional[str] = None
+    icon: Optional[str] = None
+    stations: Optional[List[str]] = None
+
+
     
-MODEL_FEATURES: List[str] = [
-    "temp", "humidity", "windspeed", "pressure", "visibility", "cloudcover", "uvindex", "tempmax",
-    "tempmin", "feelslike", "dew", "precip", "precipprob", "precipcover", "snow", "snowdepth",
-    "windgust", "winddir", "sealevelpressure", "solarradiation", "solarenergy", "severerisk", "moonphase"
+MODEL_FEATURES = [
+    'tempmax', 'tempmin', 'temp', 'feelslikemax', 'feelslikemin', 'feelslike',
+    'dew', 'humidity', 'precip', 'precipprob', 'precipcover', 'snow',
+    'snowdepth', 'windgust', 'windspeed', 'winddir', 'sealevelpressure',
+    'cloudcover', 'visibility', 'solarradiation', 'solarenergy', 'uvindex',
+    'severerisk', 'moonphase'
 ]
 
 class Schedule(BaseModel):
