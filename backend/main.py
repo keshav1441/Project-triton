@@ -13,7 +13,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth.router, prefix="/api", tags=["auth"])
+app.include_router(auth.router)
 app.include_router(scheduler.router, prefix="/api", tags=["scheduler"])
 
 if __name__ == "__main__":
