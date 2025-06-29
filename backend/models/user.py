@@ -8,12 +8,3 @@ class UserModel(BaseModel):
     username: Optional[str] = None
     groups: List[str] = []
 
-    class Config:
-        schema_extra = {
-            "example": {
-                "sub": "d3e85d65-4e04-4f5a-854c-5a5fe58f12b6",
-                "email": "user@example.com",
-                "username": "johndoe",
-                "groups": ["admin"]
-            }
-        }

@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends
 from typing import Optional
 from db import users_collection
 from models.user import UserModel
-from utils.currentUser import get_current_user
+from utils.currentUser import get_current_user  # Make sure this import path is correct
+
 
 router = APIRouter()
 

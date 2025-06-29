@@ -10,7 +10,16 @@ const Scheduler = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [scheduledDates, setScheduledDates] = useState(["2025-07-05", "2025-07-10", "2025-07-20"]);
   const [selectedBeach, setSelectedBeach] = useState('');
+  const [weatherData, setWeatherData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [prediction, setPrediction] = useState(null);
+  const [predictionLoading, setPredictionLoading] = useState(false);
+  
   const beaches = ['Juhu', 'Versova', 'Carter Road', 'Marine Drive'];
+
+  // Weather API configuration
+  const WEATHER_API_KEY = 'A7VT563ZR2PDFNDA8VVFDRQKC';
+  const WEATHER_BASE_URL = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline';
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -19,10 +28,77 @@ const Scheduler = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Fetch weather data when date is selected
+  useEffect(() => {
+    const fetchWeatherData = async () => {
+      setLoading(true);
+      try {
+        const dateStr = selectedDate.toISOString().split('T')[0];
+        const url = `${WEATHER_BASE_URL}/mumbai/${dateStr}?unitGroup=us&key=${WEATHER_API_KEY}&contentType=json`;
+        
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`Weather API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        setWeatherData(data);
+      } catch (error) {
+        console.error('Error fetching weather data:', error);
+        setWeatherData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (selectedDate) {
+      fetchWeatherData();
+    }
+  }, [selectedDate, WEATHER_API_KEY, WEATHER_BASE_URL]);
+
   const handleSchedule = () => {
     const dateStr = selectedDate.toISOString().split('T')[0];
     if (!scheduledDates.includes(dateStr)) {
       setScheduledDates([...scheduledDates, dateStr]);
+    }
+  };
+
+  const handleGetPrediction = async () => {
+    if (!selectedBeach || !weatherData) {
+      alert('Please select a beach and ensure weather data is loaded');
+      return;
+    }
+
+    setPredictionLoading(true);
+    try {
+      // Prepare data for backend
+      const predictionData = {
+        date: selectedDate.toISOString().split('T')[0],
+        beach: selectedBeach,
+        weatherData: weatherData,
+        // Add any additional data your backend expects
+      };
+
+      // Call your backend predict endpoint
+      const response = await fetch('/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(predictionData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Backend error: ${response.status}`);
+      }
+
+      const predictionResult = await response.json();
+      setPrediction(predictionResult);
+    } catch (error) {
+      console.error('Error getting prediction:', error);
+      alert('Failed to get prediction. Please try again.');
+    } finally {
+      setPredictionLoading(false);
     }
   };
 
@@ -45,7 +121,7 @@ const Scheduler = () => {
 
   return (
     <div className="flex flex-col min-h-screen p-4 gap-3 bg-gray-50 text-sm">
-      {/* Triton Scheduler Header - unchanged */}
+      {/* Triton Scheduler Header */}
       <div className="flex justify-between items-center bg-white h-20 p-4 rounded shadow">
         <div className="flex flex-col">
           <h1 className="text-xl font-semibold text-gray-900">Triton Scheduler</h1>
@@ -97,10 +173,10 @@ const Scheduler = () => {
           </div>
 
           {/* Schedule Event Section */}
-          <div className="mt-4 flex  gap-6 text-sm">
+          <div className="mt-4 flex gap-6 text-sm">
             <div className="text-gray-700 flex justify-center items-center h-10">
-  Selected: {selectedDate.toDateString()}
-</div>
+              Selected: {selectedDate.toDateString()}
+            </div>
 
             <select
               className="border rounded px-2 py-1"
@@ -112,20 +188,56 @@ const Scheduler = () => {
                 <option key={i} value={beach}>{beach}</option>
               ))}
             </select>
+            
             <button
               onClick={handleSchedule}
               disabled={!selectedBeach}
-              className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm"
+              className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm disabled:bg-gray-400"
             >
               Schedule Event
             </button>
+            
             <button
-              disabled={!selectedBeach}
-              className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm"
+              onClick={handleGetPrediction}
+              disabled={!selectedBeach || !weatherData || predictionLoading}
+              className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 text-sm disabled:bg-gray-400"
             >
-              Get Prediction
+              {predictionLoading ? 'Getting Prediction...' : 'Get Prediction'}
             </button>
           </div>
+
+          {/* Weather Loading Indicator */}
+          {loading && (
+            <div className="text-center text-gray-600 py-2">
+              Loading weather data...
+            </div>
+          )}
+
+          {/* Weather Data Display */}
+          {weatherData && !loading && (
+            <div className="mt-4 p-3 bg-blue-50 rounded">
+              <h3 className="font-semibold text-gray-800 mb-2">
+                Weather for {selectedDate.toDateString()}
+              </h3>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>Temperature: {weatherData.days[0]?.temp}°F</div>
+                <div>Humidity: {weatherData.days[0]?.humidity}%</div>
+                <div>Wind Speed: {weatherData.days[0]?.windspeed} mph</div>
+                <div>Conditions: {weatherData.days[0]?.conditions}</div>
+              </div>
+            </div>
+          )}
+
+          {/* Prediction Results */}
+          {prediction && (
+            <div className="mt-4 p-3 bg-green-50 rounded">
+              <h3 className="font-semibold text-gray-800 mb-2">Prediction Results</h3>
+              <div className="text-xs">
+                {/* Display prediction results based on your backend response structure */}
+                <pre className="whitespace-pre-wrap">{JSON.stringify(prediction, null, 2)}</pre>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Weather & Tide Section */}

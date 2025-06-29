@@ -1,5 +1,5 @@
 fastapi
-uvicorn[standard]
+uvicorn
 
 # Cognito JWT decoding and auth
 python-jose[cryptography]
@@ -14,3 +14,9 @@ pydantic[email]
 
 # Optional: for loading env vars
 python-dotenv
+
+huggingface_hub 
+joblib
+pandas
+numpy
+scikit-learn==1.2.2
