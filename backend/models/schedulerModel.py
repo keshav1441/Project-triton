@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import List
+from datetime import datetime, date
 
 class WeatherInput(BaseModel):
     tempmax: float
@@ -28,5 +29,15 @@ class WeatherInput(BaseModel):
     moonphase: float
     
 MODEL_FEATURES: List[str] = [
-    "temp", "humidity", "windspeed", "pressure", "visibility", "cloudcover", "uvindex"
+    "temp", "humidity", "windspeed", "pressure", "visibility", "cloudcover", "uvindex", "tempmax",
+    "tempmin", "feelslike", "dew", "precip", "precipprob", "precipcover", "snow", "snowdepth",
+    "windgust", "winddir", "sealevelpressure", "solarradiation", "solarenergy", "severerisk", "moonphase"
 ]
+
+class Schedule(BaseModel):
+    task: str
+    start_time: datetime
+    end_time: datetime  
+    date: date
+    location: str
+    created_by: object.mongodb.ObjectId

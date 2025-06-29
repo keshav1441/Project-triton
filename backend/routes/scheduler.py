@@ -25,3 +25,13 @@ def predict_rain(data: WeatherInput):
         "predicted_rain": bool(prediction),
         "confidence": round(confidence, 3)
     }
+
+@router.get("/schedule")
+def get_schedule():
+    # Implement your logic to retrieve the schedule
+    return {"message": "Schedule retrieved successfully"}
+
+@router.post("/schedule")
+def create_schedule(schedule_data: dict):
+    # Implement your logic to create a new schedule
+    return {"message": "Schedule created successfully", "data": schedule_data}
