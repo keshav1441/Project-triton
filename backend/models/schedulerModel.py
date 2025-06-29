@@ -50,9 +50,9 @@ MODEL_FEATURES = [
 
 class Schedule(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
-    task: str
+    name: str
+    beach_name: str
     start_time: datetime
     end_time: datetime  
     date: date
-    location: str
     created_by: ObjectId

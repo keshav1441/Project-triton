@@ -3,6 +3,8 @@ from huggingface_hub import hf_hub_download
 import joblib
 import pandas as pd
 from models.schedulerModel import WeatherInput, MODEL_FEATURES
+from db import event_collection
+from datetime import datetime, date
 
 router = APIRouter()
 
@@ -45,11 +47,20 @@ def predict_rain(data: WeatherInput):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")
 
-
 @router.get("/schedule")
-def get_schedule():
-    # Placeholder for schedule retrieval
-    return {"message": "Schedule retrieved successfully"}
+async def get_schedule(event_date: date):
+    try:
+        date_query = datetime.combine(event_date, datetime.min.time())
+        scheduled_events = await event_collection.find_one({"date": date_query})
+
+        return {
+            "message": "Scheduled Events",
+            "data": scheduled_events or {}  
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving schedule: {e}")
+
 
 @router.post("/schedule")
 def create_schedule(schedule_data: dict):
