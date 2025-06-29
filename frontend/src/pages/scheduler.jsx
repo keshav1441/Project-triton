@@ -80,7 +80,7 @@ const Scheduler = () => {
       };
 
       // Call your backend predict endpoint
-      const response = await fetch('/predict', {
+      const response = await fetch('http://localhost:8000/api/predict', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

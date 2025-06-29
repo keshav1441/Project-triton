@@ -6,7 +6,7 @@ from models.schedulerModel import WeatherInput, MODEL_FEATURES
 
 REPO_ID = "lostinthesky/scheduler"
 
-model_path = hf_hub_download(repo_id=REPO_ID, filename="rain_prediction_model.pkl")
+model_path = hf_hub_download(repo_id=REPO_ID, filename="retrained_model.pkl")
 
 model = joblib.load(model_path)
 feature_list = MODEL_FEATURES
