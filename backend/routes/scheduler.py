@@ -7,6 +7,7 @@ from models.schedulerModel import WeatherInput, MODEL_FEATURES, ScheduleCreateMo
 from db import event_collection
 from datetime import datetime, date
 from bson import ObjectId
+from typing import Any
 
 router = APIRouter()
 
@@ -19,6 +20,21 @@ except Exception as e:
     raise RuntimeError(f"Failed to load model from Hugging Face: {e}")
 
 feature_list = MODEL_FEATURES
+
+def convert_objectid_to_str(obj: Any) -> Any:
+    """
+    Recursively convert all ObjectId instances to strings in a nested structure
+    """
+    if isinstance(obj, ObjectId):
+        return str(obj)
+    elif isinstance(obj, dict):
+        return {key: convert_objectid_to_str(value) for key, value in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_objectid_to_str(item) for item in obj]
+    elif isinstance(obj, tuple):
+        return tuple(convert_objectid_to_str(item) for item in obj)
+    else:
+        return obj
 
 @router.post("/predict")
 def predict_rain(data: WeatherInput):
@@ -49,16 +65,25 @@ def predict_rain(data: WeatherInput):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")
 
-@router.get("/schedule")
-async def get_schedule(event_date: date):
+@router.get("/schedule-all")
+async def get_all_schedule_events(event_date: date):
     try:
         date_query = datetime.combine(event_date, datetime.min.time())
-        scheduled_events = await event_collection.find_one({"date": date_query})
-
+        
+        # Get all events for the date
+        cursor = event_collection.find({"date": date_query})
+        scheduled_events = await cursor.to_list(length=None)
+        
+        # Convert all ObjectIds to strings
+        scheduled_events = convert_objectid_to_str(scheduled_events)
+        
         return {
             "message": "Scheduled Events",
-            "data": scheduled_events or {}  
+            "data": scheduled_events
         }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving schedule: {e}")
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving schedule: {e}")
