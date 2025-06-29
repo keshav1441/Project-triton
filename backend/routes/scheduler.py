@@ -16,7 +16,7 @@ except Exception as e:
 
 feature_list = MODEL_FEATURES
 
-@router.get("/predict")
+@router.post("/predict")
 def predict_rain(data: WeatherInput):
     try:
         input_df = pd.DataFrame([data.dict()])
