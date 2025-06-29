@@ -1,5 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List
+from bson import ObjectId
 from datetime import datetime, date
 
 class WeatherInput(BaseModel):
@@ -35,9 +36,10 @@ MODEL_FEATURES: List[str] = [
 ]
 
 class Schedule(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     task: str
     start_time: datetime
     end_time: datetime  
     date: date
     location: str
-    created_by: object.mongodb.ObjectId
+    created_by: ObjectId
