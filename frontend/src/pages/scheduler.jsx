@@ -8,7 +8,7 @@ import AddLocationAltOutlinedIcon from '@mui/icons-material/AddLocationAltOutlin
 const Scheduler = () => {
   const [time, setTime] = useState(() => new Date().toLocaleTimeString());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [scheduledDates, setScheduledDates] = useState(["2025-07-05", "2025-07-10", "2025-07-20"]);
+  const [scheduledDates] = useState(["2025-07-05", "2025-07-10", "2025-07-20"]);
   const [selectedBeach, setSelectedBeach] = useState('');
   const [weatherData, setWeatherData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -17,6 +17,20 @@ const Scheduler = () => {
   const [eventDuration, setEventDuration] = useState('');
 
   const beaches = ['Juhu', 'Versova', 'Carter Road', 'Marine Drive'];
+
+  function getCognitoIdToken() {
+  const keys = Object.keys(localStorage);
+  const tokenKey = keys.find(key =>
+    key.includes("CognitoIdentityServiceProvider") &&
+    key.endsWith(".idToken")
+  );
+  
+  if (tokenKey) {
+    return localStorage.getItem(tokenKey);
+  }
+
+  return null; // or throw an error if needed
+}
   
 
   // Weather API configuration
@@ -106,7 +120,7 @@ const [startTime, setStartTime] = useState("07:00"); // Default start time
 const handleSchedule = async () => {
   if (!selectedBeach || !eventDuration  || !startTime) return;
 
-  const token = localStorage.getItem("CognitoIdentityServiceProvider.72ubupprv0gqifak5le93v5anv.a1437d5a-f041-70b4-240a-74921b23c90a.idToken");
+  const token = getCognitoIdToken();
 
   const start = new Date(selectedDate);
   const [hours, minutes] = startTime.split(":").map(Number);
@@ -221,9 +235,7 @@ const [scheduledEvents, setScheduledEvents] = useState([]);
 
   const fetchScheduledEvents = async (date) => {
     setLoading(true);
-    const token = localStorage.getItem(
-      "CognitoIdentityServiceProvider.72ubupprv0gqifak5le93v5anv.a1437d5a-f041-70b4-240a-74921b23c90a.idToken"
-    );
+    const token = getCognitoIdToken();
 
     try {
       const response = await fetch(`http://localhost:8000/api/schedule-all?event_date=${date}`, {
