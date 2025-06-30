@@ -85,8 +85,6 @@ async def get_all_schedule_events(event_date: date):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving schedule: {e}")
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving schedule: {e}")
 
 
 @router.post("/schedule")

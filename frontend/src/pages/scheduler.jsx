@@ -100,15 +100,53 @@ useEffect(() => {
 
 
 
-const handleSchedule = () => {
-  const dateStr = selectedDate.toISOString().split('T')[0];
-  const alreadyScheduled = scheduledDates.some(
-    (event) => event.date === dateStr && event.beach === selectedBeach
-  );
-  if (!alreadyScheduled) {
-    setScheduledDates([...scheduledDates, { date: dateStr, beach: selectedBeach }]);
+const [eventName, setEventName] = useState("");
+const [startTime, setStartTime] = useState("07:00"); // Default start time
+
+const handleSchedule = async () => {
+  if (!selectedBeach || !eventDuration  || !startTime) return;
+
+  const token = localStorage.getItem("CognitoIdentityServiceProvider.72ubupprv0gqifak5le93v5anv.a1437d5a-f041-70b4-240a-74921b23c90a.idToken");
+
+  const start = new Date(selectedDate);
+  const [hours, minutes] = startTime.split(":").map(Number);
+  start.setHours(hours, minutes, 0);
+
+  const end = new Date(start);
+  end.setHours(start.getHours() + parseInt(eventDuration));
+
+  const body = {
+    name: eventName,
+    beach_name: selectedBeach,
+    start_time: start.toISOString(),
+    end_time: end.toISOString(),
+    date: selectedDate.toISOString().split("T")[0],
+    description: `Scheduled cleanup at ${selectedBeach} beach`,
+    created_by: "frontend-user", // You can replace this with actual user's name/email from token if desired
+  };
+
+  try {
+    const res = await fetch("http://localhost:8000/api/schedule", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+     if (!res.ok) throw new Error("Failed to schedule event");
+    const data = await res.json();
+    console.log("Scheduled:", data);
+
+    // Immediately fetch updated schedule for the same date
+    const isoDate = selectedDate.toISOString().split("T")[0];
+    await fetchScheduledEvents(isoDate);
+  } catch (err) {
+    console.error(err);
   }
 };
+
 
 
 const handleGetPrediction = async () => {
@@ -179,6 +217,43 @@ const handleGetPrediction = async () => {
   }
 };
 
+const [scheduledEvents, setScheduledEvents] = useState([]);
+
+  const fetchScheduledEvents = async (date) => {
+    setLoading(true);
+    const token = localStorage.getItem(
+      "CognitoIdentityServiceProvider.72ubupprv0gqifak5le93v5anv.a1437d5a-f041-70b4-240a-74921b23c90a.idToken"
+    );
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/schedule-all?event_date=${date}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        setScheduledEvents(result.data || []);
+      } else {
+        console.warn("Error fetching events:", result.detail);
+        setScheduledEvents([]);
+      }
+      
+    } catch (error) {
+      console.error("Failed to load events:", error);
+      setScheduledEvents([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedDate) {
+      const isoDate = selectedDate.toISOString().split("T")[0];
+      fetchScheduledEvents(isoDate);
+    }
+  }, [selectedDate]);
 
 
 
@@ -278,36 +353,65 @@ const handleGetPrediction = async () => {
     </div>
 
     {/* Beach Selector */}
-    <div>
-      <label className="text-xs font-medium text-gray-700">Select Beach</label>
-      <select
-        className="w-full border rounded px-2 py-1 text-sm mt-1"
-        value={selectedBeach}
-        onChange={(e) => setSelectedBeach(e.target.value)}
-      >
-        <option value="">-- Choose Beach --</option>
-        {beaches.map((beach, i) => (
-          <option key={i} value={beach}>{beach}</option>
-        ))}
-      </select>
-    </div>
+<div className="flex flex-col md:flex-row gap-4">
+  {/* Beach Selector */}
+  <div className="w-full md:w-1/2">
+    <label className="text-xs font-medium text-gray-700">Select Beach</label>
+    <select
+      className="w-full border rounded px-2 py-1 text-sm mt-1"
+      value={selectedBeach}
+      onChange={(e) => setSelectedBeach(e.target.value)}
+    >
+      <option value="">-- Choose Beach --</option>
+      {beaches.map((beach, i) => (
+        <option key={i} value={beach}>{beach}</option>
+      ))}
+    </select>
+  </div>
 
-    {/* Duration Selector */}
-    <div>
-      <label className="text-xs font-medium text-gray-700">Event Duration</label>
-      <select
-        className="w-full border rounded px-2 py-1 text-sm mt-1"
-        value={eventDuration}
-        onChange={(e) => setEventDuration(e.target.value)}
-      >
-        <option value="">-- Select Duration --</option>
-        <option value="1">1 Hour</option>
-        <option value="2">2 Hours</option>
-        <option value="4">4 Hours</option>
-      </select>
-    </div>
+  {/* Event Name Input */}
+  <div className="w-full md:w-1/2">
+    <label className="text-xs font-medium text-gray-700">Event Name</label>
+    <input
+      type="text"
+      value={eventName}
+      onChange={(e) => setEventName(e.target.value)}
+      className="w-full border rounded px-2 py-1 text-sm mt-1"
+      placeholder="e.g. Beach Clean-up Drive"
+    />
+  </div>
+</div>
 
-    {/* Prediction Button */}
+
+<div className="flex flex-col md:flex-row gap-4">
+  {/* Start Time Input */}
+  <div className="w-full md:w-1/2">
+    <label className="text-xs font-medium text-gray-700">Start Time</label>
+    <input
+      type="time"
+      value={startTime}
+      onChange={(e) => setStartTime(e.target.value)}
+      className="w-full border rounded px-2 py-1 text-sm mt-1"
+    />
+  </div>
+
+  {/* Duration Selector */}
+  <div className="w-full md:w-1/2">
+    <label className="text-xs font-medium text-gray-700">Event Duration</label>
+    <select
+      className="w-full border rounded px-2 py-1 text-sm mt-1"
+      value={eventDuration}
+      onChange={(e) => setEventDuration(e.target.value)}
+    >
+      <option value="">-- Select Duration --</option>
+      <option value="1">1 Hour</option>
+      <option value="2">2 Hours</option>
+      <option value="4">4 Hours</option>
+    </select>
+  </div>
+</div>
+
+
 {/* Prediction Button */}
 <button
   onClick={handleGetPrediction}
@@ -346,52 +450,49 @@ const handleGetPrediction = async () => {
 
 
       </div>
-      <div className="mt-4">
-  <h2 className="text-lg font-semibold text-gray-800">Upcoming Events</h2>
-  {scheduledDates.length === 0 ? (
-    <p className="text-sm text-gray-500">No upcoming events scheduled.</p>
-  ) : (
-    <div className="grid grid-cols-2 gap-4 mt-2">
-      {Array.from(
-        scheduledDates.reduce((acc, { date, beach }) => {
-          if (!acc.has(date)) acc.set(date, []);
-          acc.get(date).push(beach);
-          return acc;
-        }, new Map())
-      ).map(([date, beaches], idx) => (
-        <div
-          key={idx}
-          className="border border-gray-200 p-3 rounded bg-white shadow-sm"
-        >
-          <div className="text-sm font-semibold text-gray-700 mb-2">
-            📅 {new Date(date).toDateString()}
-          </div>
-          <ul className="text-sm space-y-1">
-            {beaches.map((beach, bIdx) => (
-              <li
-                key={bIdx}
-                className="flex justify-between items-center bg-blue-50 px-2 py-1 rounded"
-              >
-                {beach}
-                <DeleteOutlineOutlinedIcon
-                  className="text-red-500 cursor-pointer ml-2"
-                  fontSize="small"
-                  onClick={() =>
-                    setScheduledDates(
-                      scheduledDates.filter(
-                        (e) => !(e.date === date && e.beach === beach)
-                      )
-                    )
-                  }
-                />
-              </li>
-            ))}
-          </ul>
+<div className="mt-4">
+      <h2 className="text-lg font-semibold text-gray-800">Upcoming Events</h2>
+
+      {loading ? (
+        <p className="text-sm text-gray-500">Loading...</p>
+      ) : scheduledEvents.length === 0 ? (
+        <p className="text-sm text-gray-500">No events scheduled for this date.</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+          {scheduledEvents.map((event, idx) => (
+            <div
+              key={event._id || idx}
+              className="border border-gray-200 p-4 rounded bg-white shadow-sm"
+            >
+              <div className="text-sm font-semibold text-blue-700 mb-1">
+                📍 {event.beach_name}
+              </div>
+
+              <div className="text-base font-bold text-gray-800 mb-1">
+                {event.name || "Unnamed Event"}
+              </div>
+
+              <div className="text-sm text-gray-600 mb-1">
+                🕒 {new Date(event.start_time).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })} -{" "}
+                {new Date(event.end_time).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </div>
+
+              <div className="text-sm text-gray-600 mb-2">
+                📅 {new Date(event.date).toDateString()}
+              </div>
+
+              <div className="text-xs text-gray-700 italic">{event.description}</div>
+            </div>
+          ))}
         </div>
-      ))}
+      )}
     </div>
-  )}
-</div>
 
     </div>
   );
