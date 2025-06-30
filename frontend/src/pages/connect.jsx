@@ -1,13 +1,24 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
+import axios from 'axios';
+import dayjs from 'dayjs';
 
 const Connect = () => {
-  const upcomingEvents = [
-    { name: 'Juhu Cleanup Drive', date: '2025-07-06', time: '9:00 AM', location: 'Juhu Beach' },
-    { name: 'Versova Eco March', date: '2025-07-13', time: '8:30 AM', location: 'Versova Beach' },
-    { name: 'Marine Drive Swachhta', date: '2025-07-20', time: '7:45 AM', location: 'Marine Drive' },
-  ];
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const res = await axios.get("http://localhost:8000/api/connect/events");
+        setUpcomingEvents(res.data.data || []);
+      } catch (error) {
+        console.error("Failed to fetch events", error);
+      }
+    };
+
+    fetchEvents();
+  }, []);
 
   const localGroups = [
     { name: 'Beach Buddies Mumbai', members: 128, focus: 'Plastic Removal' },
@@ -35,16 +46,18 @@ const Connect = () => {
         <div className="lg:w-1/2 bg-white p-6 rounded-2xl shadow-md border border-blue-100">
           <h2 className="text-xl font-semibold text-blue-900 mb-4">📅 Upcoming Beach Events</h2>
           <div className="space-y-5">
-            {upcomingEvents.map((event, idx) => (
+            {upcomingEvents.map((event) => (
               <div
-                key={idx}
+                key={event._id}
                 className="bg-blue-50 hover:bg-blue-100 transition p-4 rounded-xl border border-blue-200 shadow-sm"
               >
-                <h3 className="text-lg font-semibold text-blue-700">{event.name}</h3>
-                <p className="text-sm text-gray-700 mt-1">🗓 {event.date} | ⏰ {event.time}</p>
-                <p className="text-sm text-gray-600">📍 {event.location}</p>
+                <p className="text-sm text-gray-700 mt-1">📍 {event.beach_name}</p>
+                <p className="text-sm text-gray-700">
+                  ⏰ {dayjs(event.start_time).format("hh:mm A")} - {dayjs(event.end_time).format("hh:mm A")}
+                </p>
+                <p className="text-sm text-gray-600 mt-2">📝 {event.description}</p>
                 <button className="mt-3 bg-blue-600 text-white px-4 py-1.5 rounded-full text-sm hover:bg-blue-700 transition">
-                  Join Event
+                  Join Now
                 </button>
               </div>
             ))}

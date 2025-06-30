@@ -7,4 +7,3 @@ class UserModel(BaseModel):
     email: Optional[EmailStr] = None
     username: Optional[str] = None
     groups: List[str] = []
-

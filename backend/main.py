@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routes import auth
-from routes import auth, scheduler
+from routes import auth, scheduler, connect
 
 app = FastAPI()
 
@@ -15,6 +15,7 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(scheduler.router, prefix="/api", tags=["scheduler"])
+app.include_router(connect.router, prefix="/api", tags=["connect"])
 
 if __name__ == "__main__":
     import uvicorn
