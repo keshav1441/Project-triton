@@ -5,6 +5,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from bson import ObjectId
 import os
 from dotenv import load_dotenv
+from models.user import UserModel
 from db import users_collection
 from datetime import datetime
 
@@ -75,10 +76,15 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(b
         if not user:
             # Auto-create user
             new_user = {
-                "username": username,
+                "sub": sub,
                 "email": email,
-                "cognito_sub": sub,
-                "created_at": datetime.utcnow()
+                "username": username,
+                "groups": [],
+                "name": None,
+                "joined_on": datetime.utcnow(),
+                "item_scanned": 0,
+                "events_attended": 0,
+                "waste_collected": 0.0,
             }
             result = await users_collection.insert_one(new_user)
             new_user["_id"] = str(result.inserted_id)
@@ -88,7 +94,9 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(b
         if "_id" in user and isinstance(user["_id"], ObjectId):
             user["_id"] = str(user["_id"])
 
-        return user
+        if isinstance(user.get("joined_on"), datetime):
+            user["joined_on"] = user["joined_on"].date()
+        return UserModel(**user)
 
     except Exception as e:
         print(f"Token verification error: {e}")

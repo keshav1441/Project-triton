@@ -26,7 +26,7 @@ async def create_user_from_cognito(cognito_payload: dict) -> UserModel:
 
 @router.post("/api/user", response_model=UserModel)
 async def get_user_data(user: dict = Depends(get_current_user)):
-    user_id = user["sub"]
+    user_id = user.sub
     db_user = await get_user_by_id(user_id)
 
     if not db_user:
